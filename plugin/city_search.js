@@ -86,18 +86,12 @@ var citysearch = (function (jspsych) {
             const LABEL_W = layout.labelW;
 
             let response = { rt: null, key: null };
-            const arr_fix = [0];
-            const arr_time = [];
             const eventTimeline = [];
             const trialStart = performance.now();
             const trialStartedAtUtc = new Date().toISOString();
-            let t0 = trialStart;
             let lastViewedCell = 0;
-            let currentReveal = null;
-            let currentElement = null;
             let responseAtMs = null;
             let responseAtUtc = null;
-            const mouseReveals = []; // Legacy internal state; no hover events in Experiment 2.
             const clickEvents = [];
             const revealEvents = [];
             const revealedCells = new Set();
@@ -113,7 +107,6 @@ var citysearch = (function (jspsych) {
                 dwellTimes[i] = 0;
             }
 
-            let currentCell = 0;
             let firstCell = null;
             let lastCellBeforeResponse = 0;
 
@@ -137,51 +130,6 @@ var citysearch = (function (jspsych) {
                     value: value,
                     value_label: value === 1 ? "Yes" : "No",
                 };
-            }
-
-            function pushEvent(code, event, now, extras = {}) {
-                arr_fix.push(code);
-                arr_time.push(now - t0);
-                eventTimeline.push({ cell: code, time_ms: now - trialStart, event: event, ...extras });
-                t0 = now;
-            }
-
-            // Every reveal is saved with city, feature, value, onset, offset and duration.
-            // Closing at the response key fixes the prior dwell-time undercount/overcount.
-            function closeCurrentReveal(now, reason) {
-                if (currentReveal === null) return;
-                const cell = currentReveal.cell;
-                const duration = Math.max(0, now - currentReveal.started_at_perf_ms);
-                const completed = {
-                    order: currentReveal.order,
-                    cell: cell,
-                    cell_id: cell,
-                    city: currentReveal.city,
-                    position_id: currentReveal.position_id,
-                    feature_position: currentReveal.feature_position,
-                    feature_id: currentReveal.feature_id,
-                    feature_label: currentReveal.feature_label,
-                    value: currentReveal.value,
-                    value_label: currentReveal.value_label,
-                    start_ms: currentReveal.start_ms,
-                    end_ms: now - trialStart,
-                    duration_ms: duration,
-                    end_reason: reason,
-                };
-                mouseReveals.push(completed);
-                dwellTimes[cell] += duration;
-                if (currentElement !== null) currentElement.textContent = "?";
-                pushEvent(0, "exit", now, {
-                    from_cell: cell,
-                    from_cell_id: cell,
-                    city: currentReveal.city,
-                    position_id: currentReveal.position_id,
-                    feature_id: currentReveal.feature_id,
-                    reason: reason,
-                });
-                currentCell = 0;
-                currentReveal = null;
-                currentElement = null;
             }
 
             function keyToCity(key) {
@@ -320,11 +268,9 @@ var citysearch = (function (jspsych) {
                 responseAtMs = now - trialStart;
                 responseAtUtc = new Date().toISOString();
 
-                lastCellBeforeResponse = currentCell !== 0 ? currentCell : lastViewedCell;
-                if (currentReveal !== null) closeCurrentReveal(now, "response");
+                lastCellBeforeResponse = lastViewedCell;
 
-                // Keep the original transition arrays; response is the final event.
-                arr_time.push(now - t0);
+                // Append the final decision to the click-based event timeline.
                 eventTimeline.push({
                     cell: 0,
                     time_ms: responseAtMs,
@@ -354,7 +300,6 @@ var citysearch = (function (jspsych) {
                 const uniqueViewed = Object.keys(viewCounts).filter(k => viewCounts[k] > 0).map(Number);
                 const nUnique = uniqueViewed.length;
                 const nTotalViews = uniqueViewed.reduce((s, k) => s + viewCounts[k], 0);
-                const nRepeated = nTotalViews - nUnique;
 
                 let firstSide = null;
                 let firstFeatureIdx = null;
