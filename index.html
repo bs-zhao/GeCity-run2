@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>German Cities — Information Search</title>
+<script src="https://www.naodao.com/public/experiment/libs/jspsych-7/jspsych.js"></script>
+<link rel="stylesheet" href="https://www.naodao.com/public/experiment/libs/jspsych-7/css/jspsych.css">
+<script src="https://www.naodao.com/public/experiment/libs/plugin/plugin-fullscreen.js"></script>
+<script src="https://www.naodao.com/public/experiment/libs/plugin/plugin-html-keyboard-response.js"></script>
+<script src="https://www.naodao.com/public/experiment/libs/plugin/plugin-instructions.js"></script>
+<script src="./data/experiment_data.js"></script>
+<script src="./trialset_loader.js"></script>
+<script src="./layout_config.js"></script>
+<script src="./plugin/click_rec.js"></script>
+<script src="./plugin/city_search.js"></script>
+<script src="./plugin/city_feedback.js"></script>
+<script src="./plugin/break_screen.js"></script>
+<style>
+html,body{background:#fff;color:#222;min-height:100%;font-family:Arial,sans-serif}
+html:fullscreen,body:fullscreen,html:-webkit-full-screen,body:-webkit-full-screen{background:#fff;color:#222}
+:fullscreen::backdrop,::-webkit-backdrop{background:#fff}
+#jspsych-content-wrapper,#jspsych-content{background:#fff}
+.gc-intro{max-width:780px;margin:auto;text-align:left;line-height:1.65;font-size:17px}
+.gc-intro h2{text-align:center}
+.gc-intro table{border-collapse:collapse;margin:16px auto}
+.gc-intro th,.gc-intro td{border:1px solid #bbb;padding:8px 15px}
+.gc-intro th{background:#eee}
+</style>
+</head>
+<body>
+<script>
+"use strict";
+
+// ================== EXPERIMENT CONDITIONS (URL-SELECTABLE) ==============
+// Qualtrics iframe parameters:
+//   table=1/0    Show/hide the D/V table (default: 1).
+//   feedback=1/0 Show/hide correct-answer feedback (default: 0).
+//   short=1/0    One main trial, no practice trials (default: 0).
+//   download=1   Attempt JSON download when the experiment finishes.
+//   reward=N     Points earned for correct decision (default 10).
+//   cost=M       Cost per new reveal after free quota (default 1).
+//   free=Z       Free reveals per trial (default 1).
+// The legacy debug=1, trials=N and practice=N options still work unless short=1.
+const params = new URLSearchParams(location.search);
+function booleanParam(name, fallback) {
+ const value = params.get(name);
+ if(value === null) return fallback;
+ if(value === "1" || value.toLowerCase() === "true") return true;
+ if(value === "0" || value.toLowerCase() === "false") return false;
+ return fallback;
+}
+const SHOW_DV_BEFORE_TRIAL = booleanParam("table", true);
+const SHOW_CORRECT_FEEDBACK = booleanParam("feedback", false);
+const SHORT_TEST = booleanParam("short", false);
+function pointParam(name, alias, fallback, integer) {
+ const key=params.has(name)?name:(params.has(alias)?alias:null);
+ if(key===null)return fallback;
+ const str=params.get(key), val=Number(str);
+ if(!str||!Number.isFinite(val)||val<0||(integer&&!Number.isSafeInteger(val))){
+  console.warn("Invalid "+key+"; using default "+fallback);return fallback;
+ }
+ return val;
+}
+const REWARD_POINTS=pointParam("reward","N",10,false);
+const COST_POINTS=pointParam("cost","M",1,false);
+const FREE_REVEALS=pointParam("free","Z",1,true);
+function pointText(n){return String(Number(n.toFixed(6)));}
+// =======================================================================
+
+const FEEDBACK_MODE = SHOW_CORRECT_FEEDBACK ? "correct" : "choice";
+const CONDITION = (SHOW_DV_BEFORE_TRIAL ? "dv_" : "no_dv_") + FEEDBACK_MODE;
+const DEBUG = params.get("debug")==="1";
+const N_PRACTICE = SHORT_TEST ? 0 : (DEBUG ? Math.max(0,Math.min(5,Number(params.get("practice") ?? 3)||0)) : 3);
+let N_TRIALS = 0;
+const PARTICIPANT_ID = params.get("participant") || params.get("PROLIFIC_PID") || "anonymous";
+const SESSION_ID = "gc-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,10);
+const SEED = params.has("seed") && Number.isFinite(Number(params.get("seed"))) ? (Number(params.get("seed"))>>>0) : ((Math.random()*4294967296)>>>0);
+const CHOICE_KEYS = ["a","b","d","ArrowLeft","ArrowRight"];
+const jsPsych = initJsPsych({on_finish: completeExperiment});
+let randomState = SEED;
+function rand(){randomState=(randomState+0x6D2B79F5)>>>0;let t=randomState;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;}
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+// These values are initialized from the preloaded ./data/experiment_data.js.
+// Two independent orders: fixed monotonic D/V statistics, randomized-once choice display.
+let statisticsFeatures,orderedFeatures,featureIndices,POSITION_FEATURE_MAP,MAIN_TRIALS,PRACTICE_TRIALS,TRIALSET_SOURCE;
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function getFeatureVector(values){return featureIndices.map(i=>values[i]);}
+function cueTable(){return '<table><thead><tr><th>Feature</th><th>Discrimination</th><th>Validity</th></tr></thead><tbody>'+statisticsFeatures.map(f=>'<tr><td>'+escapeHTML(f.label)+'</td><td>'+(f.target_discrimination*100).toFixed(0)+'%</td><td>'+(f.target_validity*100).toFixed(0)+'%</td></tr>').join("")+'</tbody></table>';}
+function trialDvHtml(){return '<div class="gc-intro">'+cueTable()+'<p style="text-align:center">Press <b>Space</b> to continue.</p></div>';}
+function keyCity(key){const k=String(key ?? "").toLowerCase();return k==="a"||k==="arrowleft"?"A":k==="b"||k==="d"||k==="arrowright"?"B":null;}
+let metadata;
+function intro(stimulus){return {type:jsPsychHtmlKeyboardResponse,stimulus:'<div class="gc-intro">'+stimulus+'<p style="text-align:center">Press <b>Space</b> to continue.</p></div>',choices:[" "]};}
+
+// Request fullscreen directly from the user's Space keydown. This must occur
+// within a user gesture; merely loading the jsPsych fullscreen script does not enter fullscreen.
+class FullscreenSpacePlugin {
+ constructor(jsPsych){this.jsPsych=jsPsych;}
+ trial(display_element){
+  let requesting=false;
+  const message='<div class="gc-intro"><h2>Fullscreen mode</h2>'+
+   '<p>The experiment will now enter fullscreen mode. Please do not exit fullscreen until the experiment is complete.</p>'+
+   '<p style="text-align:center">Press <b>Space</b> to continue.</p>'+
+   '<p id="gc-fullscreen-error" style="color:#a00" aria-live="polite"></p></div>';
+  display_element.innerHTML=message;
+  const errorEl=display_element.querySelector("#gc-fullscreen-error");
+  const onKeyDown=(event)=>{
+   if(event.key!==" " && event.code!=="Space")return;
+   event.preventDefault();
+   if(requesting)return;
+   requesting=true;
+   if(document.fullscreenElement){
+    finish(true);
+    return;
+   }
+   if(typeof document.documentElement.requestFullscreen!=="function"){
+    requesting=false;
+    errorEl.textContent="Fullscreen is unavailable in this browser. Please use a browser that supports fullscreen.";
+    return;
+   }
+   try{
+    Promise.resolve(document.documentElement.requestFullscreen()).then(
+     ()=>finish(true),
+     ()=>{requesting=false;errorEl.textContent="Fullscreen was blocked. Please allow fullscreen for this experiment and press Space to try again.";}
+    );
+   }catch(e){
+    requesting=false;
+    errorEl.textContent="Fullscreen was blocked. Please allow fullscreen for this experiment and press Space to try again.";
+   }
+  };
+  const finish=(entered)=>{
+   document.removeEventListener("keydown",onKeyDown,true);
+   display_element.innerHTML="";
+   this.jsPsych.finishTrial({fullscreen_entered:entered});
+  };
+  document.addEventListener("keydown",onKeyDown,true);
+ }
+}
+FullscreenSpacePlugin.info={name:"fullscreen-space",parameters:{}};
+
+function onePair(source,isPractice,index){
+ const fA=getFeatureVector(source.left_cues), fB=getFeatureVector(source.right_cues);
+ const correctKey=source.correct_side==="left"?"a":"d";
+ const common={source_trial_id:source.trial_id,pair_index:source.pair_index,source_correct_side:source.correct_side,trial_index:index+1,is_practice:isPractice};
+ const seq=[];
+ if(SHOW_DV_BEFORE_TRIAL)seq.push({type:jsPsychHtmlKeyboardResponse,stimulus:trialDvHtml(),choices:[" "],data:{...common,phase:"dv_cue",dv_cue_advance:"space"}});
+ seq.push({type:clickrec,data:{...common,phase:"fixation"}});
+ seq.push({type:citysearch,features_a:fA,features_b:fB,feature_labels:orderedFeatures.map(f=>f.label),feature_ids:orderedFeatures.map(f=>f.id),feature_positive:orderedFeatures.map(f=>f.positive),correct_key:correctKey,choices:CHOICE_KEYS,is_practice:isPractice,trial_index:index+1,city_a_name:source.left_city,city_b_name:source.right_city,city_a_pop:source.left_population,city_b_pop:source.right_population,reward_points:REWARD_POINTS,click_cost_points:COST_POINTS,free_reveals:FREE_REVEALS,immediate_finish:SHOW_CORRECT_FEEDBACK,data:{...common,phase:"choice",condition:CONDITION,feedback_mode:FEEDBACK_MODE}});
+ if(SHOW_CORRECT_FEEDBACK){
+  seq.push({type:cityfeedback,features_a:fA,features_b:fB,feature_labels:orderedFeatures.map(f=>f.label),larger_city:source.correct_side==="left"?"A":"B",choice_city:()=>{let r=jsPsych.data.get().filter({trial_type:"city-search"}).last(1).values()[0];return r?.choice_city||"";},correct:()=>{let r=jsPsych.data.get().filter({trial_type:"city-search"}).last(1).values()[0];return Boolean(r?.correct);},is_practice:isPractice,data:{...common,phase:"feedback"}});
+ }
+ return {timeline:seq};
+}
+const timeline=[];
+function buildTimeline(){
+const taskInstructions =
+ '<h2>Welcome</h2>'+
+ (SHORT_TEST
+   ? '<p>This short test contains 1 main trial and no practice trials.</p>'
+   : '<p>You will complete '+N_PRACTICE+' practice trials followed by '+N_TRIALS+' main trials.</p>')+
+ '<p>Choose which city has the larger population.</p>'+
+ '<p>Click a cell to reveal Yes or No. Its value remains visible until you choose.</p>'+
+ '<p>A correct decision earns <b>'+pointText(REWARD_POINTS)+'</b> points; an incorrect decision earns zero reward points.</p>'+
+ '<p>The first <b>'+FREE_REVEALS+'</b> new cell reveals per trial are free. Each additional new reveal deducts <b>'+pointText(COST_POINTS)+'</b> points.</p>'+
+ '<p>Clicking an already revealed cell again does not deduct points.</p>'+
+ '<p>Your information-search cost is shown during each decision. Net trial points equal earned reward minus cost.</p>'+
+ '<p>Place one hand on the mouse and the other on the <b>A</b> and <b>D</b> keys.</p>'+
+ '<p>Press <b>A</b> for City A or <b>D</b> for City B.</p>'+
+ (SHOW_DV_BEFORE_TRIAL
+   ? '<p>You will see the feature statistics before each decision.</p>'
+   : SHOW_CORRECT_FEEDBACK
+      ? '<p>You will receive feedback after each decision.</p>'
+      : '');
+timeline.push(intro(taskInstructions));
+timeline.push(intro(
+ '<h2>Important: Please Stay Focused</h2>'+
+ '<p>This study analyzes <b>how long you take to make each decision</b>, as well as which information you choose to inspect.</p>'+
+ '<p>Please remain focused on the experiment. Do not use your phone, switch to other tasks, or engage in unrelated activities during the decision trials.</p>'+
+ '<p>Scheduled breaks are available after one-third and two-thirds of the main experiment. Please use these breaks for other activities.</p>'+
+ '<p>Make accurate decisions at your natural pace.</p>'
+));
+timeline.push({type:FullscreenSpacePlugin});
+const feedbackInstructions = SHOW_CORRECT_FEEDBACK
+ ? 'After each response, all ten feature values will be revealed and the city with the larger population will be highlighted. Press <b>Space</b> to continue.'
+ : 'After each response, you will briefly see which city you chose. You will <b>not</b> be told which city was correct.';
+if (SHOW_DV_BEFORE_TRIAL) {
+ timeline.push(intro('<h2>Feature statistics</h2>'+
+  '<p><b>Discrimination:</b> How often a feature differs between two cities.</p>'+
+  '<p><b>Validity:</b> When a feature differs, how often it indicates the larger city.</p>'+
+  '<p>This table appears before each decision.</p>'+cueTable()+
+  '<p>After each response, you will see your choice, but not whether it was correct.</p>'));
+} else {
+ timeline.push(intro('<h2>Response feedback</h2><p>'+feedbackInstructions+'</p>'));
+}
+const blackSquareReminder = '<p style="text-align:center">Before every trial, click the black square in the center of the screen to begin.</p>';
+if (!SHORT_TEST) {
+ timeline.push(intro('<h2>Practice</h2><p>You will complete '+N_PRACTICE+' practice trials before the main experiment. The practice city pairs are distinct from the main experiment.</p>'));
+ timeline.push(intro(blackSquareReminder));
+ PRACTICE_TRIALS.forEach((t,i)=>timeline.push(onePair(t,true,i)));
+}
+timeline.push(intro(SHORT_TEST
+ ? '<h2>Short test</h2><p>This test contains just one decision trial, with no practice trials.</p>'
+ : '<h2>Main experiment</h2><p>Practice complete. The main experiment contains '+N_TRIALS+' trials. Please respond as carefully as you can.</p>'));
+if (SHORT_TEST) timeline.push(intro(blackSquareReminder));
+// For the full experiment: breaks after trials 50 and 100 (not practice).
+// Debug sessions of at least three trials use proportional break positions.
+const breakAfter=N_TRIALS>=3
+ ? [Math.floor(N_TRIALS/3),Math.floor(2*N_TRIALS/3)]
+ : [];
+MAIN_TRIALS.forEach((t,i)=>{
+ timeline.push(onePair(t,false,i));
+ const completed=i+1;
+ const breakIndex=breakAfter.indexOf(completed);
+ if(!SHORT_TEST && breakIndex!==-1){
+  timeline.push({
+   type:gecitybreak,
+   break_number:breakIndex+1,
+   completed_main_trials:completed,
+   total_main_trials:N_TRIALS,
+   data:{phase:"break",is_practice:false,break_number:breakIndex+1,
+         completed_main_trials:completed,total_main_trials:N_TRIALS}
+  });
+ }
+});
+timeline.push({
+ type:jsPsychHtmlKeyboardResponse,
+ stimulus:'<div class="gc-intro" style="max-width:780px;">'+
+  '<h2 style="font-size:28px;text-align:center;">Decision Task Complete — Data Upload Required</h2>'+
+  '<div style="border:3px solid #b91c1c;background:#fff2f2;color:#991b1b;padding:16px 18px;margin:20px 0;text-align:center;font-size:21px;font-weight:bold;">'+
+  'IMPORTANT: Your data have NOT been submitted yet!</div>'+
+  '<p><b>Step 1:</b> Press <b>Space</b> to exit fullscreen.'+
+   ((DEBUG || params.get("download")==="1") ? ' Your data file (<b>gecity_*.json</b>) will download automatically.' : '')+
+  '</p>'+
+  '<p><b>Step 2:</b> Return to the Qualtrics survey and <b>UPLOAD the downloaded JSON file</b> in the File Upload question.</p>'+
+  '<p><b>Step 3:</b> Click <b>Next</b> to submit your survey response.</p>'+
+  '<p style="color:#991b1b;font-size:20px;font-weight:bold;text-align:center;margin:24px 0;">DO NOT CLOSE THIS PAGE BEFORE UPLOADING YOUR FILE.</p>'+
+  '<p style="text-align:center;">Press <b>Space</b> to exit fullscreen and proceed to data upload.</p>'+
+  '</div>',
+ choices:[" "]
+});
+}
+function completeExperiment(){
+ const data=jsPsych.data.get().values();
+ const choices=data.filter(r=>r.phase==="choice");
+ const summarize=(rows)=>{
+  const sum=k=>Number(rows.reduce((s,r)=>s+(Number(r[k])||0),0).toFixed(6));
+  return {trial_count:rows.length,correct_count:rows.filter(r=>r.correct).length,
+    total_reveals:sum("n_revealed_cells"),total_charged_reveals:sum("n_charged_reveals"),
+    total_reward_points:sum("earned_reward_points"),total_information_cost_points:sum("information_cost_points"),
+    total_net_points:sum("net_trial_points")};
+ };
+ const score_summary={main:summarize(choices.filter(r=>r.task_phase==="main")),practice:summarize(choices.filter(r=>r.task_phase==="practice"))};
+ const payload={metadata,records:data,score_summary,completed_at:new Date().toISOString()};
+ window.GECITY_RESULT=payload;
+ const encoded=JSON.stringify(payload);
+ // Parent-page integration: embed in a trusted Qualtrics page/iframe. The parent should
+ // listen for {type:"GECITY_COMPLETE", payload} and save the data server-side.
+ // Restrict parent messages to an explicitly configured origin.
+ const parentOrigin=params.get("parent_origin");
+ if(window.parent!==window && parentOrigin){window.parent.postMessage({type:"GECITY_COMPLETE",payload},parentOrigin);}
+ if(DEBUG || params.get("download")==="1"){
+  const blob=new Blob([encoded],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="gecity_"+SESSION_ID+".json";a.textContent="Download experiment JSON";a.style.display="block";a.style.padding="18px";document.body.appendChild(a);
+  a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+ }
+ // Return to the normal Qualtrics iframe/page after initiating the data download.
+ if(document.fullscreenElement && typeof document.exitFullscreen==="function"){
+  document.exitFullscreen().catch(err=>console.warn("Could not exit fullscreen:",err));
+ }
+}
+function startExperiment(){
+ try{
+  const loaded=loadTrialsetFromJavaScript(shuffle,N_PRACTICE);
+  // All participants see the same D/V table in D-ascending, V-descending order.
+  // Choice/search feature rows are shuffled ONCE for each new session.
+  statisticsFeatures=loaded.features.slice().sort((a,b)=>
+    a.target_discrimination-b.target_discrimination ||
+    b.target_validity-a.target_validity ||
+    a.label.localeCompare(b.label));
+  orderedFeatures=shuffle(loaded.features);
+  featureIndices=orderedFeatures.map(f=>loaded.features.findIndex(v=>v.id===f.id));
+  POSITION_FEATURE_MAP=orderedFeatures.map((f,i)=>({position_id:i+1,position:i+1,feature_id:f.id,feature_label:f.label}));
+  N_TRIALS=SHORT_TEST?1:(DEBUG?Math.max(1,Math.min(loaded.trials.length,Number(params.get("trials") ?? loaded.trials.length)||loaded.trials.length)):loaded.trials.length);
+  MAIN_TRIALS=shuffle(loaded.trials).slice(0,N_TRIALS);
+  PRACTICE_TRIALS=loaded.practice;
+  TRIALSET_SOURCE=loaded.source_file;
+  metadata={experiment_version:"click-reveal-cost-v2",record_schema_version:3,reward_points_per_correct:REWARD_POINTS,cost_points_per_reveal:COST_POINTS,free_reveals_per_trial:FREE_REVEALS,trialset:loaded.trialset_name,trialset_source:TRIALSET_SOURCE,condition:CONDITION,show_dv_before_trial:SHOW_DV_BEFORE_TRIAL,feedback_mode:FEEDBACK_MODE,participant_id:PARTICIPANT_ID,session_id:SESSION_ID,random_seed:SEED,debug:DEBUG,short_test:SHORT_TEST,main_trial_count:N_TRIALS,practice_trial_count:N_PRACTICE,scheduled_break_after_trials:N_TRIALS>=3?[Math.floor(N_TRIALS/3),Math.floor(2*N_TRIALS/3)]:[],statistics_feature_order:statisticsFeatures.map(f=>f.id),feature_order:orderedFeatures.map(f=>f.id),position_feature_map:POSITION_FEATURE_MAP,feature_statistics:loaded.features,layout_config:LAYOUT_CONFIG};
+  jsPsych.data.addProperties(metadata);
+  buildTimeline();
+  document.body.innerHTML="";
+  jsPsych.run(timeline);
+ }catch(err){
+  console.error("GeCity experiment startup failed:",err);
+  document.body.innerHTML='<main style="font:16px/1.6 Arial,sans-serif;max-width:760px;margin:48px auto;padding:20px"><h2>Experiment could not start</h2><p>'+escapeHTML(err.message)+'</p><p>Copy the latest <code>experiment_data.js</code> from your trialset output folder into <code>v1/data/</code>, then reload <code>index.html</code>.</p></main>';
+ }
+}
+startExperiment();
+</script>
+</body>
+</html>
