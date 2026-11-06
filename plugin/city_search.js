@@ -169,10 +169,10 @@ var citysearch = (function (jspsych) {
     font-size: 18px; font-weight: bold; color: #222; cursor: pointer;
   }
   .cs-cell.cs-revealed {background:#e9f1fa;border-color:#557a9f;cursor:default;}
-  #cs-cost {position:fixed;bottom:4%;left:0;right:0;text-align:center;
-            font-size:18px;color:#333;pointer-events:none;}
-  #cs-cost-value {font-size:22px;color:#a12323;}
-  #cs-reveal-count {font-size:14px;color:#555;margin-top:5px;}
+  #cs-cost {position:fixed;left:50%;top:${cityLabelY - 43}px;
+            transform:translate(-50%,-50%);white-space:nowrap;
+            text-align:center;font-size:20px;color:#333;pointer-events:none;}
+  #cs-cost-value {font-size:20px;color:#a12323;}
   .cs-label {
     position: fixed; width: ${LABEL_W}px; text-align: center;
     font-size: 15px; font-weight: 600; color: #333;
@@ -200,12 +200,9 @@ var citysearch = (function (jspsych) {
                 cells.push({ idA, idB, fi });
             }
 
-            html += '<div id="cs-cost">Information cost: <strong id="cs-cost-value">-0</strong> points'+
-                    '<div id="cs-reveal-count">Revealed: 0 / '+(N*2)+
-                    ' (first '+trial.free_reveals+' free)</div></div></div>';
+            html += '<div id="cs-cost">Cost: <strong id="cs-cost-value">-0</strong></div></div>';
             display_element.innerHTML = html;
             const costEl = display_element.querySelector("#cs-cost-value");
-            const revealCountEl = display_element.querySelector("#cs-reveal-count");
 
             function onCellClick(event, el, cellIdValue) {
                 if (response.key !== null || event.button !== 0) return;
@@ -241,8 +238,6 @@ var citysearch = (function (jspsych) {
                 lastViewedCell=cellIdValue;
                 viewCounts[cellIdValue]++;
                 costEl.textContent="-"+pointText(informationCostPoints);
-                revealCountEl.textContent="Revealed: "+revealedCells.size+" / "+(N*2)+
-                    " (first "+trial.free_reveals+" free)";
             }
             cells.forEach(({idA,idB,fi})=>{
                 const elA=display_element.querySelector("#"+idA);
