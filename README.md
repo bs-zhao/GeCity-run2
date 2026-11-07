@@ -57,3 +57,7 @@ The Experiment 2 palette now uses **cyan and rose** instead of blue/orange, avoi
 - Rose: `#FDF2F5`, `#F2A9BE`, `#CB738F`, `#904F64`, `#5F3341`.
 
 This scheme is tagged `oklch-complementary-cyan-rose-v1` in session metadata and every choice record. These are complementary hues with approximately matched perceived lightness/chroma, but equal attention capture is an experimental assumption to check, not a guarantee. The two dots remain vertically stacked (D on top, V below); D/V meanings are randomized 50/50 **once per participant**, remain fixed across trials and are recorded alongside rank levels. `dots=0` remains visually unchanged.
+
+## Visual D/V statistics table (Table condition)
+
+When `table=1`, the introductory feature-statistics screen and every pre-trial D/V statistics screen display **both percentages and horizontal bars** for each of the five features. Both D and V use an identical 0–100% scale, making magnitude comparisons intuitive; column subtitles explain D and V. Bars use the same neutral gray to avoid creating a second (unrandomized) color manipulation that could bias attention. The original five cue values, feature sorting, color-dot labels, cue order, click costs, and recorded observations are unchanged. `table=0` still displays no numerical D/V table.
