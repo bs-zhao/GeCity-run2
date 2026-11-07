@@ -88,10 +88,10 @@ var citysearch = (function (jspsych) {
             const { cx, cityAX, cityBX, cityLabelY, rows } = layout;
             const CELL = layout.cell;
             const LABEL_W = layout.labelW;
-            // Exactly the palettes from the pilot D/V dots branch.
+            // Five ranks in perceptually balanced OKLCH blue/orange palettes (matching L and C at each rank).
             const shades={
-                blue:["#EAF5FF","#A7D4F4","#56A1D7","#176CAE","#003B74"],
-                green:["#ECF9E5","#AEDF9E","#64B96B","#208743","#004E24"]
+                blue:["#C0DAFC","#8DB7ED","#5D94DA","#3772BB","#23538E"],
+                orange:["#F6CEB7","#E3A47F","#CB7B48","#AB5819","#803D05"]
             };
             if(trial.show_dv_dots){
                 const validLevels=x=>Array.isArray(x)&&x.length===N&&
@@ -368,6 +368,7 @@ var citysearch = (function (jspsych) {
                     event_timeline: eventTimeline,
                     show_dv_dots: trial.show_dv_dots,
                     dv_color_mapping: trial.dv_color_mapping,
+                    dv_dot_palette: trial.show_dv_dots ? "oklch-balanced-blue-orange-v1" : "off",
                     dv_discrimination_levels: trial.show_dv_dots ? trial.discrimination_levels : [],
                     dv_validity_levels: trial.show_dv_dots ? trial.validity_levels : [],
                     click_events: clickEvents,

@@ -32,11 +32,11 @@ Top-level JSON includes score_summary for main and practice separately. Hover dw
 IMPORTANT: GitHub Pages and iframe alone do not save data in Qualtrics. Confirm fullscreen, download, File Upload and survey Next-button flow in Qualtrics Preview.
 ## Optional randomized D/V color dots
 
-Add `dots=1` (also `color_dots=1`) to any iframe URL to display the same five-shade D/V dots as `GeCity-run/pilot/dv-color-dots` under each central feature label. Default `dots=0` displays no dots. This switch is independent of `table` and `feedback`.
+Add `dots=1` (also `color_dots=1`) to any iframe URL to display the same stacked D/V dot layout as the earlier `GeCity-run/pilot/dv-color-dots` under each central feature label. Default `dots=0` displays no dots. This switch is independent of `table` and `feedback`.
 
-Each of the two colors (blue and green) corresponds to either Discrimination (D) or Validity (V). The blue/green meaning is randomized by a 50/50 draw **once per participant/session before the experiment begins**, held fixed across practice and all 150 main trials, and stated in the Welcome screen and the decision-screen legend. D is shown before V in each label, but the D and V **colors** swap between participants. Each attribute's 1..5 dot intensity is a **relative rank among the five attributes**, with darker shades denoting higher D or V, exactly as in the original pilot. Ranks follow stable feature identity and not randomized screen position.
+Each of the two colors (blue and orange) corresponds to either Discrimination (D) or Validity (V). The blue/orange meaning is randomized by a 50/50 draw **once per participant/session before the experiment begins**, held fixed across practice and all 150 main trials, and stated in the Welcome screen and the decision-screen legend. D is shown before V in each label, but the D and V **colors** swap between participants. Each attribute's 1..5 dot intensity is a **relative rank among the five attributes**, with darker shades denoting higher D or V, exactly as in the original pilot. Ranks follow stable feature identity and not randomized screen position.
 
-The JSON metadata and each choice record contain `show_dv_dots`, `dv_color_mapping` (e.g. `{"discrimination":"green","validity":"blue"}`), `dv_discrimination_levels` and `dv_validity_levels` in the participant's top-to-bottom display order. `dv_dot_style` is `five-level-relative-rank` when enabled. The random color assignment happens after the full trial-order and position randomizations; `dots=1` and `dots=0` with the same seed therefore have identical trial and position order.
+The JSON metadata and each choice record contain `show_dv_dots`, `dv_color_mapping` (e.g. `{"discrimination":"orange","validity":"blue"}`), `dv_discrimination_levels` and `dv_validity_levels` in the participant's top-to-bottom display order. `dv_dot_style` is `five-level-relative-rank` when enabled. The random color assignment happens after the full trial-order and position randomizations; `dots=1` and `dots=0` with the same seed therefore have identical trial and position order.
 
 Example one-trial pilot with dots:
 
@@ -48,3 +48,7 @@ Example one-trial pilot with dots:
 ~~~
 
 **Design note:** In the `table=0&feedback=1` group, turning on D/V dots explicitly gives participants relative D/V information before they have learned it through feedback. Treat this as a distinct information manipulation from the original feedback-only group. The URL switch intentionally permits all four `table × feedback` combinations.
+
+### Blue/orange perceptually matched five-level palette
+
+Experiment 2 uses a new matched-OKLCH blue/orange color pair rather than the pilot's blue/green hues. The five (lightest to darkest) blue hex codes are `#C0DAFC`, `#8DB7ED`, `#5D94DA`, `#3772BB`, `#23538E`; the orange codes are `#F6CEB7`, `#E3A47F`, `#CB7B48`, `#AB5819`, `#803D05`. Each corresponding blue and orange level is calibrated to near-identical OKLCH lightness and chroma, with different hues. The palette identifier `oklch-balanced-blue-orange-v1` is saved in JSON metadata and each choice record. This reduces predictable salience imbalance but does not guarantee identical attentional capture without a perception pilot. Vertical D (top) / V (bottom) placement, and participant-level random color assignment, are unchanged.
