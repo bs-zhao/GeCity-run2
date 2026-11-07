@@ -30,3 +30,21 @@ Each click has time_ms since choice onset, a UTC timestamp, city A/B, stable fea
 Top-level JSON includes score_summary for main and practice separately. Hover dwell times are not measures in this experiment.
 
 IMPORTANT: GitHub Pages and iframe alone do not save data in Qualtrics. Confirm fullscreen, download, File Upload and survey Next-button flow in Qualtrics Preview.
+## Optional randomized D/V color dots
+
+Add `dots=1` (also `color_dots=1`) to any iframe URL to display the same five-shade D/V dots as `GeCity-run/pilot/dv-color-dots` under each central feature label. Default `dots=0` displays no dots. This switch is independent of `table` and `feedback`.
+
+Each of the two colors (blue and green) corresponds to either Discrimination (D) or Validity (V). The blue/green meaning is randomized by a 50/50 draw **once per participant/session before the experiment begins**, held fixed across practice and all 150 main trials, and stated in the Welcome screen and the decision-screen legend. D is shown before V in each label, but the D and V **colors** swap between participants. Each attribute's 1..5 dot intensity is a **relative rank among the five attributes**, with darker shades denoting higher D or V, exactly as in the original pilot. Ranks follow stable feature identity and not randomized screen position.
+
+The JSON metadata and each choice record contain `show_dv_dots`, `dv_color_mapping` (e.g. `{"discrimination":"green","validity":"blue"}`), `dv_discrimination_levels` and `dv_validity_levels` in the participant's top-to-bottom display order. `dv_dot_style` is `five-level-relative-rank` when enabled. The random color assignment happens after the full trial-order and position randomizations; `dots=1` and `dots=0` with the same seed therefore have identical trial and position order.
+
+Example one-trial pilot with dots:
+
+~~~html
+<iframe src="https://bs-zhao.github.io/GeCity-run2/?download=1&amp;table=1&amp;feedback=0&amp;short=1&amp;reward=10&amp;cost=1&amp;free=1&amp;dots=1"
+  title="City Population Decision Task — Experiment 2"
+  style="width:100%;height:850px;border:1px solid #ccc;display:block;"
+  allow="fullscreen" allowfullscreen></iframe>
+~~~
+
+**Design note:** In the `table=0&feedback=1` group, turning on D/V dots explicitly gives participants relative D/V information before they have learned it through feedback. Treat this as a distinct information manipulation from the original feedback-only group. The URL switch intentionally permits all four `table × feedback` combinations.
