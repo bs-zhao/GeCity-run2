@@ -31,6 +31,10 @@ var citysearch = (function (jspsych) {
                 array: true,
                 default: undefined,
             },
+            show_dv_dots: {type: jspsych.ParameterType.BOOL,default:false},
+            discrimination_levels: {type: jspsych.ParameterType.INT,array:true,default:[]},
+            validity_levels: {type: jspsych.ParameterType.INT,array:true,default:[]},
+            dv_color_mapping: {type: jspsych.ParameterType.OBJECT,default:null},
             correct_key: {
                 type: jspsych.ParameterType.KEY,
                 default: "a",
@@ -84,6 +88,21 @@ var citysearch = (function (jspsych) {
             const { cx, cityAX, cityBX, cityLabelY, rows } = layout;
             const CELL = layout.cell;
             const LABEL_W = layout.labelW;
+            // Exactly the palettes from the pilot D/V dots branch.
+            const shades={
+                blue:["#DFEDFC","#AFD4F5","#77B2E7","#387FC4","#15538F"],
+                green:["#DFF5E5","#B5DFC2","#7FCC98","#3AA56A","#166E43"]
+            };
+            if(trial.show_dv_dots){
+                const validLevels=x=>Array.isArray(x)&&x.length===N&&
+                   x.every(level=>Number.isInteger(level)&&level>=1&&level<=5);
+                if(!validLevels(trial.discrimination_levels)||!validLevels(trial.validity_levels))
+                    throw new Error("D/V dot levels must be 1..5 for every row");
+                const mapping=trial.dv_color_mapping;
+                if(!mapping || !shades[mapping.discrimination] ||
+                   !shades[mapping.validity] || mapping.discrimination===mapping.validity)
+                    throw new Error("Invalid D/V color mapping");
+            }
 
             let response = { rt: null, key: null };
             const eventTimeline = [];
@@ -178,11 +197,29 @@ var citysearch = (function (jspsych) {
     font-size: 15px; font-weight: 600; color: #333;
     transform: translate(-50%, -50%);
   }
+  .cs-label-dv {line-height:1.15;pointer-events:none;}
+  .cs-dv-row {display:flex;align-items:center;justify-content:center;gap:14px;margin-top:6px;}
+  .cs-dv-key {display:inline-flex;align-items:center;gap:4px;font:700 11px Arial,sans-serif;}
+  .cs-dv-dot {display:inline-block;width:13px;height:13px;border-radius:50%;
+              border:1px solid rgba(0,0,0,.24);box-sizing:border-box;}
+  .cs-dv-legend {position:fixed;left:50%;top:15px;transform:translateX(-50%);
+                 white-space:nowrap;font:13px Arial,sans-serif;color:#444;
+                 text-align:center;pointer-events:none;}
 </style>
 <div id="cs-root">
   <div id="cs-city-a" style="left:${cityAX}px; top:${cityLabelY}px;">City A</div>
   <div id="cs-city-b" style="left:${cityBX}px; top:${cityLabelY}px;">City B</div>
 `;
+
+            // The legend follows the participant's one-time D/V color assignment.
+            if(trial.show_dv_dots){
+                const mapping=trial.dv_color_mapping;
+                html+='<div class="cs-dv-legend">'+
+                      '<b style="color:'+shades[mapping.discrimination][4]+'">D</b> ('+
+                      mapping.discrimination+') = Discrimination &nbsp; · &nbsp; '+
+                      '<b style="color:'+shades[mapping.validity][4]+'">V</b> ('+
+                      mapping.validity+') = Validity &nbsp; · &nbsp; Darker = Higher</div>';
+            }
 
             const cells = [];
 
@@ -192,9 +229,20 @@ var citysearch = (function (jspsych) {
 
                 const idA = `cs-a-${fi}`;
                 const idB = `cs-b-${fi}`;
+                const dLevel=trial.show_dv_dots?trial.discrimination_levels[fi]:null;
+                const vLevel=trial.show_dv_dots?trial.validity_levels[fi]:null;
+                const cueLabel=trial.show_dv_dots
+                    ? label+'<div class="cs-dv-row">'+
+                        '<span class="cs-dv-key" title="D (Discrimination): level '+dLevel+' of 5">'+
+                        '<span class="cs-dv-dot" style="background:'+
+                          shades[trial.dv_color_mapping.discrimination][dLevel-1]+'"></span>D</span>'+
+                        '<span class="cs-dv-key" title="V (Validity): level '+vLevel+' of 5">'+
+                        '<span class="cs-dv-dot" style="background:'+
+                          shades[trial.dv_color_mapping.validity][vLevel-1]+'"></span>V</span></div>'
+                    : label;
 
                 html += `<div class="cs-cell" id="${idA}" style="left:${leftX}px; top:${y - CELL / 2}px;">?</div>`;
-                html += `<div class="cs-label" style="left:${cx}px; top:${y}px;">${label}</div>`;
+                html += `<div class="cs-label${trial.show_dv_dots?" cs-label-dv":""}" style="left:${cx}px; top:${y}px;">${cueLabel}</div>`;
                 html += `<div class="cs-cell" id="${idB}" style="left:${rightX}px; top:${y - CELL / 2}px;">?</div>`;
 
                 cells.push({ idA, idB, fi });
@@ -318,6 +366,10 @@ var citysearch = (function (jspsych) {
                     choice_city: choiceCity,
                     larger_city: trial.correct_key === "a" ? "A" : "B",
                     event_timeline: eventTimeline,
+                    show_dv_dots: trial.show_dv_dots,
+                    dv_color_mapping: trial.dv_color_mapping,
+                    dv_discrimination_levels: trial.show_dv_dots ? trial.discrimination_levels : [],
+                    dv_validity_levels: trial.show_dv_dots ? trial.validity_levels : [],
                     click_events: clickEvents,
                     reveal_events: revealEvents,
                     // A complete per-trial mapping of every visible cell, including never-viewed cells.
