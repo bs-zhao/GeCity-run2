@@ -41,6 +41,8 @@ html:fullscreen,body:fullscreen,html:-webkit-full-screen,body:-webkit-full-scree
 //   reward=N     Points earned for correct decision (default 10).
 //   cost=M       Cost per new reveal after free quota (default 1).
 //   free=Z       Free reveals per trial (default 1).
+//   dots=1/0     Show five-level D/V color dots (default 0).
+//                color_dots=1 is an alias. Blue/green meanings randomized per session.
 // The legacy debug=1, trials=N and practice=N options still work unless short=1.
 const params = new URLSearchParams(location.search);
 function booleanParam(name, fallback) {
@@ -53,6 +55,8 @@ function booleanParam(name, fallback) {
 const SHOW_DV_BEFORE_TRIAL = booleanParam("table", true);
 const SHOW_CORRECT_FEEDBACK = booleanParam("feedback", false);
 const SHORT_TEST = booleanParam("short", false);
+// Optional D/V five-intensity dots; color_dots is an alias for dots.
+const SHOW_DV_DOTS=booleanParam(params.has("dots")?"dots":"color_dots",false);
 function pointParam(name, alias, fallback, integer) {
  const key=params.has(name)?name:(params.has(alias)?alias:null);
  if(key===null)return fallback;
@@ -84,6 +88,22 @@ function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=
 // These values are initialized from the preloaded ./data/experiment_data.js.
 // Two independent orders: fixed monotonic D/V statistics, randomized-once choice display.
 let statisticsFeatures,orderedFeatures,featureIndices,POSITION_FEATURE_MAP,MAIN_TRIALS,PRACTICE_TRIALS,TRIALSET_SOURCE;
+let discriminationDotLevels,validityDotLevels,DV_COLOR_MAPPING;
+// Relative rank over the five cues (1=lightest, 5=darkest), not probability buckets.
+function rankedCueLevels(allFeatures,ordered,key){
+ const ranked=allFeatures.slice().sort((a,b)=>a[key]-b[key]||a.id.localeCompare(b.id));
+ const rankById=new Map(ranked.map((f,i)=>[f.id,i+1]));
+ return ordered.map(f=>rankById.get(f.id));
+}
+function dotInstruction(){
+ if(!SHOW_DV_DOTS)return "";
+ return "<p>Two colored dots below each feature name indicate "+
+  "<b>D</b> (Discrimination) and <b>V</b> (Validity). "+
+  "<b>"+DV_COLOR_MAPPING.discrimination+"</b> means D and <b>"+
+  DV_COLOR_MAPPING.validity+"</b> means V. "+
+  "Within each color, darker shades mean higher relative levels (1 to 5). "+
+  "The color meanings stay the same throughout the experiment.</p>";
+}
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function getFeatureVector(values){return featureIndices.map(i=>values[i]);}
 function cueTable(){return '<table><thead><tr><th>Feature</th><th>Discrimination</th><th>Validity</th></tr></thead><tbody>'+statisticsFeatures.map(f=>'<tr><td>'+escapeHTML(f.label)+'</td><td>'+(f.target_discrimination*100).toFixed(0)+'%</td><td>'+(f.target_validity*100).toFixed(0)+'%</td></tr>').join("")+'</tbody></table>';}
@@ -145,7 +165,7 @@ function onePair(source,isPractice,index){
  const seq=[];
  if(SHOW_DV_BEFORE_TRIAL)seq.push({type:jsPsychHtmlKeyboardResponse,stimulus:trialDvHtml(),choices:[" "],data:{...common,phase:"dv_cue",dv_cue_advance:"space"}});
  seq.push({type:clickrec,data:{...common,phase:"fixation"}});
- seq.push({type:citysearch,features_a:fA,features_b:fB,feature_labels:orderedFeatures.map(f=>f.label),feature_ids:orderedFeatures.map(f=>f.id),feature_positive:orderedFeatures.map(f=>f.positive),correct_key:correctKey,choices:CHOICE_KEYS,is_practice:isPractice,trial_index:index+1,city_a_name:source.left_city,city_b_name:source.right_city,city_a_pop:source.left_population,city_b_pop:source.right_population,reward_points:REWARD_POINTS,click_cost_points:COST_POINTS,free_reveals:FREE_REVEALS,immediate_finish:SHOW_CORRECT_FEEDBACK,data:{...common,phase:"choice",condition:CONDITION,feedback_mode:FEEDBACK_MODE}});
+ seq.push({type:citysearch,features_a:fA,features_b:fB,feature_labels:orderedFeatures.map(f=>f.label),feature_ids:orderedFeatures.map(f=>f.id),feature_positive:orderedFeatures.map(f=>f.positive),show_dv_dots:SHOW_DV_DOTS,discrimination_levels:discriminationDotLevels,validity_levels:validityDotLevels,dv_color_mapping:DV_COLOR_MAPPING,correct_key:correctKey,choices:CHOICE_KEYS,is_practice:isPractice,trial_index:index+1,city_a_name:source.left_city,city_b_name:source.right_city,city_a_pop:source.left_population,city_b_pop:source.right_population,reward_points:REWARD_POINTS,click_cost_points:COST_POINTS,free_reveals:FREE_REVEALS,immediate_finish:SHOW_CORRECT_FEEDBACK,data:{...common,phase:"choice",condition:CONDITION,feedback_mode:FEEDBACK_MODE}});
  if(SHOW_CORRECT_FEEDBACK){
   seq.push({type:cityfeedback,features_a:fA,features_b:fB,feature_labels:orderedFeatures.map(f=>f.label),larger_city:source.correct_side==="left"?"A":"B",choice_city:()=>{let r=jsPsych.data.get().filter({trial_type:"city-search"}).last(1).values()[0];return r?.choice_city||"";},correct:()=>{let r=jsPsych.data.get().filter({trial_type:"city-search"}).last(1).values()[0];return Boolean(r?.correct);},is_practice:isPractice,data:{...common,phase:"feedback"}});
  }
@@ -166,6 +186,7 @@ const taskInstructions =
  '<p>Your information-search cost is shown during each decision. Net trial points equal earned reward minus cost.</p>'+
  '<p>Place one hand on the mouse and the other on the <b>A</b> and <b>D</b> keys.</p>'+
  '<p>Press <b>A</b> for City A or <b>D</b> for City B.</p>'+
+ dotInstruction()+
  (SHOW_DV_BEFORE_TRIAL
    ? '<p>You will see the feature statistics before each decision.</p>'
    : SHOW_CORRECT_FEEDBACK
@@ -285,7 +306,15 @@ function startExperiment(){
   MAIN_TRIALS=shuffle(loaded.trials).slice(0,N_TRIALS);
   PRACTICE_TRIALS=loaded.practice;
   TRIALSET_SOURCE=loaded.source_file;
-  metadata={experiment_version:"click-reveal-cost-v2",record_schema_version:3,reward_points_per_correct:REWARD_POINTS,cost_points_per_reveal:COST_POINTS,free_reveals_per_trial:FREE_REVEALS,trialset:loaded.trialset_name,trialset_source:TRIALSET_SOURCE,condition:CONDITION,show_dv_before_trial:SHOW_DV_BEFORE_TRIAL,feedback_mode:FEEDBACK_MODE,participant_id:PARTICIPANT_ID,session_id:SESSION_ID,random_seed:SEED,debug:DEBUG,short_test:SHORT_TEST,main_trial_count:N_TRIALS,practice_trial_count:N_PRACTICE,scheduled_break_after_trials:N_TRIALS>=3?[Math.floor(N_TRIALS/3),Math.floor(2*N_TRIALS/3)]:[],statistics_feature_order:statisticsFeatures.map(f=>f.id),feature_order:orderedFeatures.map(f=>f.id),position_feature_map:POSITION_FEATURE_MAP,feature_statistics:loaded.features,layout_config:LAYOUT_CONFIG};
+  discriminationDotLevels=rankedCueLevels(loaded.features,orderedFeatures,"target_discrimination");
+  validityDotLevels=rankedCueLevels(loaded.features,orderedFeatures,"target_validity");
+  // Randomize the blue/green D/V mapping exactly once, AFTER order randomizations.
+  // Thus dots=1 cannot change row or trial order for the same seed.
+  const dIsBlue=SHOW_DV_DOTS?rand()<0.5:null;
+  DV_COLOR_MAPPING=SHOW_DV_DOTS
+    ? (dIsBlue?{discrimination:"blue",validity:"green"}:{discrimination:"green",validity:"blue"})
+    : null;
+  metadata={experiment_version:"click-reveal-cost-v2",record_schema_version:3,show_dv_dots:SHOW_DV_DOTS,dv_dot_style:SHOW_DV_DOTS?"five-level-relative-rank":"off",dv_color_mapping:DV_COLOR_MAPPING,dv_discrimination_levels:SHOW_DV_DOTS?discriminationDotLevels:[],dv_validity_levels:SHOW_DV_DOTS?validityDotLevels:[],reward_points_per_correct:REWARD_POINTS,cost_points_per_reveal:COST_POINTS,free_reveals_per_trial:FREE_REVEALS,trialset:loaded.trialset_name,trialset_source:TRIALSET_SOURCE,condition:CONDITION,show_dv_before_trial:SHOW_DV_BEFORE_TRIAL,feedback_mode:FEEDBACK_MODE,participant_id:PARTICIPANT_ID,session_id:SESSION_ID,random_seed:SEED,debug:DEBUG,short_test:SHORT_TEST,main_trial_count:N_TRIALS,practice_trial_count:N_PRACTICE,scheduled_break_after_trials:N_TRIALS>=3?[Math.floor(N_TRIALS/3),Math.floor(2*N_TRIALS/3)]:[],statistics_feature_order:statisticsFeatures.map(f=>f.id),feature_order:orderedFeatures.map(f=>f.id),position_feature_map:POSITION_FEATURE_MAP,feature_statistics:loaded.features,layout_config:LAYOUT_CONFIG};
   jsPsych.data.addProperties(metadata);
   buildTimeline();
   document.body.innerHTML="";
