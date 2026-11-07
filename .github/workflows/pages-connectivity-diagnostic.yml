@@ -1,0 +1,25 @@
+name: One-time Pages connectivity diagnostic
+on:
+  push:
+    paths:
+      - .github/workflows/pages-connectivity-diagnostic.yml
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify website and core assets (HTTP)
+        shell: bash
+        run: |
+          set -u
+          for url in \
+            "https://bs-zhao.github.io/GeCity-run2/" \
+            "https://bs-zhao.github.io/GeCity-run2/plugin/city_search.js" \
+            "https://bs-zhao.github.io/GeCity-run2/data/experiment_data.js" \
+            "https://bs-zhao.github.io/GeCity-run/experiment2/" \
+            "https://www.naodao.com/public/experiment/libs/jspsych-7/jspsych.js" \
+            "https://www.naodao.com/public/experiment/libs/plugin/plugin-html-keyboard-response.js"; do
+            echo "TEST_URL=$url"
+            curl -L -sS --connect-timeout 10 --max-time 25 --retry 2 -o /tmp/response.txt -w 'HTTP=%{http_code} BYTES=%{size_download} FINAL_URL=%{url_effective}\n' "$url" || true
+            head -c 140 /tmp/response.txt || true
+            echo
+          done
