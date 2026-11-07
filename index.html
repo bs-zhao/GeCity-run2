@@ -26,27 +26,36 @@ html:fullscreen,body:fullscreen,html:-webkit-full-screen,body:-webkit-full-scree
 .gc-intro table{border-collapse:collapse;margin:16px auto}
 .gc-intro th,.gc-intro td{border:1px solid #bbb;padding:8px 15px}
 .gc-intro th{background:#eee}
-/* D/V visual table: both measures share the same 0-100% scale and neutral ink.
-   Do not use the randomized cue-dot colors here: dot visibility is a separate manipulation. */
-.gc-dv-table{width:100%;max-width:760px;border-collapse:separate;border-spacing:0;table-layout:fixed;
-             margin:16px auto 10px;font-size:15px;line-height:1.35}
-.gc-dv-table th,.gc-dv-table td{border:0;border-bottom:1px solid #dce1e7;
-                                padding:12px 10px;text-align:left;vertical-align:middle}
-.gc-dv-table thead th{background:#f2f4f6;border-bottom:2px solid #bac3cc}
-.gc-dv-table th:first-child{width:23%}
-.gc-dv-table td:first-child{font-weight:600;white-space:nowrap}
-.gc-dv-table tbody tr:nth-child(even){background:#fafbfc}
-.gc-dv-measure{display:flex;align-items:center;gap:9px;min-width:0}
-.gc-dv-track{height:16px;min-width:0;flex:1;overflow:hidden;background:#e5e8ec;border-radius:4px}
-.gc-dv-fill{display:block;height:100%;background:#45515e;border-radius:4px 0 0 4px}
-.gc-dv-percent{min-width:38px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* Minimal D/V table: centered column headings; bars share a 0-100% scale.
+   Neutral tones keep this distinct from the randomized D/V cue-dot colors. */
+.gc-intro .gc-dv-table{
+  width:100%;max-width:720px;table-layout:fixed;border-collapse:collapse;
+  margin:14px auto 8px;font-size:15px;line-height:1.3;
+}
+.gc-intro .gc-dv-table th,.gc-intro .gc-dv-table td{
+  border:0;padding:11px 10px;vertical-align:middle;
+}
+.gc-intro .gc-dv-table thead th{
+  background:transparent;border-bottom:2px solid #adb5bd;
+  text-align:center;font-weight:600;white-space:nowrap;padding-top:8px;padding-bottom:11px;
+}
+.gc-intro .gc-dv-table th:first-child{width:24%}
+.gc-intro .gc-dv-table th:nth-child(2),.gc-intro .gc-dv-table th:nth-child(3){width:38%}
+.gc-intro .gc-dv-table tbody td{border-bottom:1px solid #e5e9ed}
+.gc-intro .gc-dv-table tbody tr:last-child td{border-bottom:0}
+.gc-intro .gc-dv-table tbody td:first-child{text-align:center;font-weight:600;white-space:nowrap}
+.gc-dv-measure{display:flex;align-items:center;gap:10px;min-width:0}
+.gc-dv-track{height:12px;min-width:0;flex:1;overflow:hidden;background:#ecf0f3;border-radius:3px}
+.gc-dv-fill{display:block;height:100%;background:#566573;border-radius:3px 0 0 3px}
+.gc-dv-percent{min-width:38px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(max-width:620px){
-  .gc-dv-table{font-size:13px}
-  .gc-dv-table th,.gc-dv-table td{padding:9px 6px}
-  .gc-dv-table th:first-child{width:25%}
+  .gc-intro .gc-dv-table{font-size:12px}
+  .gc-intro .gc-dv-table th,.gc-intro .gc-dv-table td{padding:9px 4px}
+  .gc-intro .gc-dv-table th:first-child{width:25%}
+  .gc-intro .gc-dv-table th:nth-child(2),.gc-intro .gc-dv-table th:nth-child(3){width:37.5%}
   .gc-dv-measure{gap:4px}
-  .gc-dv-track{height:14px}
-  .gc-dv-percent{min-width:31px}
+  .gc-dv-track{height:11px}
+  .gc-dv-percent{min-width:28px}
 }
 </style>
 </head>
