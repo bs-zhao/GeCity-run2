@@ -70,7 +70,7 @@ html:fullscreen,body:fullscreen,html:-webkit-full-screen,body:-webkit-full-scree
 //   cost=M       Cost per new reveal after free quota (default 1).
 //   free=Z       Free reveals per trial (default 1).
 //   dots=1/0     Show five-level D/V color dots (default 0).
-//                color_dots=1 is an alias. Cyan/rose meanings randomized per session.
+//                color_dots=1 is an alias. Blue/green meanings randomized per session.
 // The legacy debug=1, trials=N and practice=N options still work unless short=1.
 const params = new URLSearchParams(location.search);
 function booleanParam(name, fallback) {
@@ -350,13 +350,13 @@ function startExperiment(){
   TRIALSET_SOURCE=loaded.source_file;
   discriminationDotLevels=rankedCueLevels(loaded.features,orderedFeatures,"target_discrimination");
   validityDotLevels=rankedCueLevels(loaded.features,orderedFeatures,"target_validity");
-  // Randomize the cyan/rose D/V mapping exactly once, AFTER order randomizations.
+  // Randomize the original blue/green D/V mapping exactly once, AFTER order randomizations.
   // Thus dots=1 cannot change row or trial order for the same seed.
-  const dIsCyan=SHOW_DV_DOTS?rand()<0.5:null;
+  const dIsBlue=SHOW_DV_DOTS?rand()<0.5:null;
   DV_COLOR_MAPPING=SHOW_DV_DOTS
-    ? (dIsCyan?{discrimination:"cyan",validity:"rose"}:{discrimination:"rose",validity:"cyan"})
+    ? (dIsBlue?{discrimination:"blue",validity:"green"}:{discrimination:"green",validity:"blue"})
     : null;
-  metadata={experiment_version:"click-reveal-cost-v2",record_schema_version:3,show_dv_dots:SHOW_DV_DOTS,dv_dot_style:SHOW_DV_DOTS?"five-level-relative-rank":"off",dv_dot_palette:SHOW_DV_DOTS?"oklch-complementary-cyan-rose-v1":"off",dv_color_mapping:DV_COLOR_MAPPING,dv_discrimination_levels:SHOW_DV_DOTS?discriminationDotLevels:[],dv_validity_levels:SHOW_DV_DOTS?validityDotLevels:[],reward_points_per_correct:REWARD_POINTS,cost_points_per_reveal:COST_POINTS,free_reveals_per_trial:FREE_REVEALS,trialset:loaded.trialset_name,trialset_source:TRIALSET_SOURCE,condition:CONDITION,show_dv_before_trial:SHOW_DV_BEFORE_TRIAL,feedback_mode:FEEDBACK_MODE,participant_id:PARTICIPANT_ID,session_id:SESSION_ID,random_seed:SEED,debug:DEBUG,short_test:SHORT_TEST,main_trial_count:N_TRIALS,practice_trial_count:N_PRACTICE,scheduled_break_after_trials:N_TRIALS>=3?[Math.floor(N_TRIALS/3),Math.floor(2*N_TRIALS/3)]:[],statistics_feature_order:statisticsFeatures.map(f=>f.id),feature_order:orderedFeatures.map(f=>f.id),position_feature_map:POSITION_FEATURE_MAP,feature_statistics:loaded.features,layout_config:LAYOUT_CONFIG};
+  metadata={experiment_version:"click-reveal-cost-v2",record_schema_version:3,show_dv_dots:SHOW_DV_DOTS,dv_dot_style:SHOW_DV_DOTS?"five-level-relative-rank":"off",dv_dot_palette:SHOW_DV_DOTS?"pilot-original-blue-green-v1":"off",dv_color_mapping:DV_COLOR_MAPPING,dv_discrimination_levels:SHOW_DV_DOTS?discriminationDotLevels:[],dv_validity_levels:SHOW_DV_DOTS?validityDotLevels:[],reward_points_per_correct:REWARD_POINTS,cost_points_per_reveal:COST_POINTS,free_reveals_per_trial:FREE_REVEALS,trialset:loaded.trialset_name,trialset_source:TRIALSET_SOURCE,condition:CONDITION,show_dv_before_trial:SHOW_DV_BEFORE_TRIAL,feedback_mode:FEEDBACK_MODE,participant_id:PARTICIPANT_ID,session_id:SESSION_ID,random_seed:SEED,debug:DEBUG,short_test:SHORT_TEST,main_trial_count:N_TRIALS,practice_trial_count:N_PRACTICE,scheduled_break_after_trials:N_TRIALS>=3?[Math.floor(N_TRIALS/3),Math.floor(2*N_TRIALS/3)]:[],statistics_feature_order:statisticsFeatures.map(f=>f.id),feature_order:orderedFeatures.map(f=>f.id),position_feature_map:POSITION_FEATURE_MAP,feature_statistics:loaded.features,layout_config:LAYOUT_CONFIG};
   jsPsych.data.addProperties(metadata);
   buildTimeline();
   document.body.innerHTML="";

@@ -34,9 +34,9 @@ IMPORTANT: GitHub Pages and iframe alone do not save data in Qualtrics. Confirm 
 
 Add `dots=1` (also `color_dots=1`) to any iframe URL to display the same stacked D/V dot layout as the earlier `GeCity-run/pilot/dv-color-dots` under each central feature label. Default `dots=0` displays no dots. This switch is independent of `table` and `feedback`.
 
-Each of the two colors (cyan and rose) corresponds to either Discrimination (D) or Validity (V). The cyan/rose meaning is randomized by a 50/50 draw **once per participant/session before the experiment begins**, held fixed across practice and all 150 main trials, and stated in the Welcome screen and the decision-screen legend. D is shown before V in each label, but the D and V **colors** swap between participants. Each attribute's 1..5 dot intensity is a **relative rank among the five attributes**, with darker shades denoting higher D or V, exactly as in the original pilot. Ranks follow stable feature identity and not randomized screen position.
+Each of the two colors (blue and green) corresponds to either Discrimination (D) or Validity (V). The blue/green meaning is randomized by a 50/50 draw **once per participant/session before the experiment begins**, held fixed across practice and all 150 main trials, and stated in the Welcome screen and the decision-screen legend. D is shown before V in each label, but the D and V **colors** swap between participants. Each attribute's 1..5 dot intensity is a **relative rank among the five attributes**, with darker shades denoting higher D or V, exactly as in the original pilot. Ranks follow stable feature identity and not randomized screen position.
 
-The JSON metadata and each choice record contain `show_dv_dots`, `dv_color_mapping` (e.g. `{"discrimination":"rose","validity":"cyan"}`), `dv_discrimination_levels` and `dv_validity_levels` in the participant's top-to-bottom display order. `dv_dot_style` is `five-level-relative-rank` when enabled. The random color assignment happens after the full trial-order and position randomizations; `dots=1` and `dots=0` with the same seed therefore have identical trial and position order.
+The JSON metadata and each choice record contain `show_dv_dots`, `dv_color_mapping` (e.g. `{"discrimination":"green","validity":"blue"}`), `dv_discrimination_levels` and `dv_validity_levels` in the participant's top-to-bottom display order. `dv_dot_style` is `five-level-relative-rank` when enabled. The random color assignment happens after the full trial-order and position randomizations; `dots=1` and `dots=0` with the same seed therefore have identical trial and position order.
 
 Example one-trial pilot with dots:
 
@@ -49,14 +49,14 @@ Example one-trial pilot with dots:
 
 **Design note:** In the `table=0&feedback=1` group, turning on D/V dots explicitly gives participants relative D/V information before they have learned it through feedback. Treat this as a distinct information manipulation from the original feedback-only group. The URL switch intentionally permits all four `table × feedback` combinations.
 
-### Cyan/rose complementary five-level palette
+### Original pilot blue/green five-level palette
 
-The Experiment 2 palette now uses **cyan and rose** instead of blue/orange, avoiding the brown appearance of dark orange. The pair has mathematically opposite OKLCH hue angles (cyan = 180°, rose = 0°); at each of the five ranks, both colors use the same target OKLCH lightness/chroma values (respectively L/C: 0.97/0.013, 0.81/0.090, 0.66/0.115, 0.51/0.090, 0.38/0.066). The rounded sRGB swatches are:
+The D/V circles are restored to the exact original `GeCity-run/pilot/dv-color-dots` colors:
+- Blue (level 1 to 5): `#DFEDFC`, `#AFD4F5`, `#77B2E7`, `#387FC4`, `#15538F`.
+- Green (level 1 to 5): `#DFF5E5`, `#B5DFC2`, `#7FCC98`, `#3AA56A`, `#166E43`.
 
-- Cyan: `#ECF8F5`, `#7BD4C3`, `#1BA995`, `#0B7768`, `#074E44`.
-- Rose: `#FDF2F5`, `#F2A9BE`, `#CB738F`, `#904F64`, `#5F3341`.
+The original five relative D/V ranks and the participant-level 50/50 randomized color mapping are retained. **Current** D and V circles remain vertically stacked (D above V), rather than returning to the pilot's horizontal layout. Session and choice records label the restored color version `pilot-original-blue-green-v1`.
 
-This scheme is tagged `oklch-complementary-cyan-rose-v1` in session metadata and every choice record. These are complementary hues with approximately matched perceived lightness/chroma, but equal attention capture is an experimental assumption to check, not a guarantee. The two dots remain vertically stacked (D on top, V below); D/V meanings are randomized 50/50 **once per participant**, remain fixed across trials and are recorded alongside rank levels. `dots=0` remains visually unchanged.
 
 ## Visual D/V statistics table (Table condition)
 

@@ -88,10 +88,10 @@ var citysearch = (function (jspsych) {
             const { cx, cityAX, cityBX, cityLabelY, rows } = layout;
             const CELL = layout.cell;
             const LABEL_W = layout.labelW;
-            // Five ranks from complementary OKLCH hues: cyan 180deg, rose 0deg (matched L and C).
+            // Original pilot/dv-color-dots five-rank blue/green shades; color meaning randomized once per participant.
             const shades={
-                cyan:["#ECF8F5","#7BD4C3","#1BA995","#0B7768","#074E44"],
-                rose:["#FDF2F5","#F2A9BE","#CB738F","#904F64","#5F3341"]
+                blue:["#DFEDFC","#AFD4F5","#77B2E7","#387FC4","#15538F"],
+                green:["#DFF5E5","#B5DFC2","#7FCC98","#3AA56A","#166E43"]
             };
             if(trial.show_dv_dots){
                 const validLevels=x=>Array.isArray(x)&&x.length===N&&
@@ -368,7 +368,7 @@ var citysearch = (function (jspsych) {
                     event_timeline: eventTimeline,
                     show_dv_dots: trial.show_dv_dots,
                     dv_color_mapping: trial.dv_color_mapping,
-                    dv_dot_palette: trial.show_dv_dots ? "oklch-complementary-cyan-rose-v1" : "off",
+                    dv_dot_palette: trial.show_dv_dots ? "pilot-original-blue-green-v1" : "off",
                     dv_discrimination_levels: trial.show_dv_dots ? trial.discrimination_levels : [],
                     dv_validity_levels: trial.show_dv_dots ? trial.validity_levels : [],
                     click_events: clickEvents,
