@@ -88,10 +88,10 @@ var citysearch = (function (jspsych) {
             const { cx, cityAX, cityBX, cityLabelY, rows } = layout;
             const CELL = layout.cell;
             const LABEL_W = layout.labelW;
-            // Original pilot/dv-color-dots five-rank blue/green shades; color meaning randomized once per participant.
+            // Five blue/green ranks with approximately evenly stepped perceptual lightness (OKLCH L: .975, .82, .66, .50, .33). Color meaning randomized once per participant.
             const shades={
-                blue:["#DFEDFC","#AFD4F5","#77B2E7","#387FC4","#15538F"],
-                green:["#DFF5E5","#B5DFC2","#7FCC98","#3AA56A","#166E43"]
+                blue:["#F1F8FF","#97C9FD","#5897D6","#32669A","#183755"],
+                green:["#F1F9F3","#9AD5A5","#5AA66C","#337344","#193F23"]
             };
             if(trial.show_dv_dots){
                 const validLevels=x=>Array.isArray(x)&&x.length===N&&
@@ -368,7 +368,7 @@ var citysearch = (function (jspsych) {
                     event_timeline: eventTimeline,
                     show_dv_dots: trial.show_dv_dots,
                     dv_color_mapping: trial.dv_color_mapping,
-                    dv_dot_palette: trial.show_dv_dots ? "pilot-original-blue-green-v1" : "off",
+                    dv_dot_palette: trial.show_dv_dots ? "perceptual-even-blue-green-v2" : "off",
                     dv_discrimination_levels: trial.show_dv_dots ? trial.discrimination_levels : [],
                     dv_validity_levels: trial.show_dv_dots ? trial.validity_levels : [],
                     click_events: clickEvents,

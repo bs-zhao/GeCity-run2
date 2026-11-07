@@ -49,14 +49,14 @@ Example one-trial pilot with dots:
 
 **Design note:** In the `table=0&feedback=1` group, turning on D/V dots explicitly gives participants relative D/V information before they have learned it through feedback. Treat this as a distinct information manipulation from the original feedback-only group. The URL switch intentionally permits all four `table × feedback` combinations.
 
-### Original pilot blue/green five-level palette
+### Five perceptually spaced blue/green levels
 
-The D/V circles are restored to the exact original `GeCity-run/pilot/dv-color-dots` colors:
-- Blue (level 1 to 5): `#DFEDFC`, `#AFD4F5`, `#77B2E7`, `#387FC4`, `#15538F`.
-- Green (level 1 to 5): `#DFF5E5`, `#B5DFC2`, `#7FCC98`, `#3AA56A`, `#166E43`.
+The D/V circles use five noticeably separated brightness levels, from nearly white to very dark. Both blue and green have approximately matching OKLCH perceptual lightness targets of **[0.975, 0.82, 0.66, 0.50, 0.33]**. Each step differs by about 0.16–0.17, making levels 2 and 4 visibly lighter/darker than the middle level 3.
 
-The original five relative D/V ranks and the participant-level 50/50 randomized color mapping are retained. **Current** D and V circles remain vertically stacked (D above V), rather than returning to the pilot's horizontal layout. Session and choice records label the restored color version `pilot-original-blue-green-v1`.
+- Blue (level 1–5): `#F1F8FF`, `#97C9FD`, `#5897D6`, `#32669A`, `#183755`.
+- Green (level 1–5): `#F1F9F3`, `#9AD5A5`, `#5AA66C`, `#337344`, `#193F23`.
 
+The first level is almost white while preserving a slight color tint and a visible circular border. The fifth is a deep blue/green, not black. D remains above V, and color meaning is assigned blue/green with a 50/50 randomization at session start and fixed within the participant. Five-level rankings still correspond to relative cue D/V ranks. The recorded palette version is `perceptual-even-blue-green-v2`.
 
 ## Visual D/V statistics table (Table condition)
 
