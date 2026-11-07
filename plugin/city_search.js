@@ -198,8 +198,8 @@ var citysearch = (function (jspsych) {
     transform: translate(-50%, -50%);
   }
   .cs-label-dv {line-height:1.15;pointer-events:none;}
-  .cs-dv-row {display:flex;align-items:center;justify-content:center;gap:14px;margin-top:6px;}
-  .cs-dv-key {display:inline-flex;align-items:center;gap:4px;font:700 11px Arial,sans-serif;}
+  .cs-dv-row {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;margin-top:4px;}
+  .cs-dv-key {display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:14px;font:700 11px Arial,sans-serif;}
   .cs-dv-dot {display:inline-block;width:13px;height:13px;border-radius:50%;
               border:1px solid rgba(0,0,0,.24);box-sizing:border-box;}
   .cs-dv-legend {position:fixed;left:50%;top:15px;transform:translateX(-50%);
