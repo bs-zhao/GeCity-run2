@@ -90,8 +90,8 @@ var citysearch = (function (jspsych) {
             const LABEL_W = layout.labelW;
             // Exactly the palettes from the pilot D/V dots branch.
             const shades={
-                blue:["#DFEDFC","#AFD4F5","#77B2E7","#387FC4","#15538F"],
-                green:["#DFF5E5","#B5DFC2","#7FCC98","#3AA56A","#166E43"]
+                blue:["#EAF5FF","#A7D4F4","#56A1D7","#176CAE","#003B74"],
+                green:["#ECF9E5","#AEDF9E","#64B96B","#208743","#004E24"]
             };
             if(trial.show_dv_dots){
                 const validLevels=x=>Array.isArray(x)&&x.length===N&&
@@ -200,7 +200,7 @@ var citysearch = (function (jspsych) {
   .cs-label-dv {line-height:1.15;pointer-events:none;}
   .cs-dv-row {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;margin-top:4px;}
   .cs-dv-key {display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:14px;font:700 11px Arial,sans-serif;}
-  .cs-dv-dot {display:inline-block;width:13px;height:13px;border-radius:50%;
+  .cs-dv-dot {display:inline-block;width:16px;height:16px;flex:0 0 16px;border-radius:50%;
               border:1px solid rgba(0,0,0,.24);box-sizing:border-box;}
   .cs-dv-legend {position:fixed;left:50%;top:15px;transform:translateX(-50%);
                  white-space:nowrap;font:13px Arial,sans-serif;color:#444;
