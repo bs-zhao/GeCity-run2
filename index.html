@@ -245,9 +245,7 @@ const feedbackInstructions = SHOW_CORRECT_FEEDBACK
  ? 'After each response, all ten feature values will be revealed and the city with the larger population will be highlighted. Press <b>Space</b> to continue.'
  : 'After each response, you will briefly see which city you chose. You will <b>not</b> be told which city was correct.';
 if (SHOW_DV_BEFORE_TRIAL) {
- timeline.push(intro('<h2>Feature statistics</h2>'+
-  '<p><b>D:</b> How often cities differ. &nbsp; <b>V:</b> Accuracy when they differ.</p>'+
-  cueTable()+'<p>'+feedbackInstructions+'</p>'));
+ timeline.push(intro('<h2>Feature statistics</h2>'+cueTable()));
 } else {
  timeline.push(intro('<h2>Response feedback</h2><p>'+feedbackInstructions+'</p>'));
 }
