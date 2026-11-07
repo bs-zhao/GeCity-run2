@@ -26,6 +26,30 @@ html:fullscreen,body:fullscreen,html:-webkit-full-screen,body:-webkit-full-scree
 .gc-intro table{border-collapse:collapse;margin:16px auto}
 .gc-intro th,.gc-intro td{border:1px solid #bbb;padding:8px 15px}
 .gc-intro th{background:#eee}
+/* D/V visual table: both measures share the same 0-100% scale and neutral ink.
+   Do not use the randomized cue-dot colors here: dot visibility is a separate manipulation. */
+.gc-dv-table{width:100%;max-width:760px;border-collapse:separate;border-spacing:0;table-layout:fixed;
+             margin:16px auto 10px;font-size:15px;line-height:1.35}
+.gc-dv-table th,.gc-dv-table td{border:0;border-bottom:1px solid #dce1e7;
+                                padding:12px 10px;text-align:left;vertical-align:middle}
+.gc-dv-table thead th{background:#f2f4f6;border-bottom:2px solid #bac3cc}
+.gc-dv-table th:first-child{width:23%}
+.gc-dv-table td:first-child{font-weight:600;white-space:nowrap}
+.gc-dv-table tbody tr:nth-child(even){background:#fafbfc}
+.gc-dv-table .gc-dv-sub{display:block;font-weight:400;color:#56616b;font-size:12px;margin-top:3px}
+.gc-dv-measure{display:flex;align-items:center;gap:9px;min-width:0}
+.gc-dv-track{height:16px;min-width:0;flex:1;overflow:hidden;background:#e5e8ec;border-radius:4px}
+.gc-dv-fill{display:block;height:100%;background:#45515e;border-radius:4px 0 0 4px}
+.gc-dv-percent{min-width:38px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gc-dv-scale{font-size:13px;color:#56616b;text-align:center;margin:4px 0 14px}
+@media(max-width:620px){
+  .gc-dv-table{font-size:13px}
+  .gc-dv-table th,.gc-dv-table td{padding:9px 6px}
+  .gc-dv-table th:first-child{width:25%}
+  .gc-dv-measure{gap:4px}
+  .gc-dv-track{height:14px}
+  .gc-dv-percent{min-width:31px}
+}
 </style>
 </head>
 <body>
@@ -106,8 +130,26 @@ function dotInstruction(){
 }
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function getFeatureVector(values){return featureIndices.map(i=>values[i]);}
-function cueTable(){return '<table><thead><tr><th>Feature</th><th>Discrimination</th><th>Validity</th></tr></thead><tbody>'+statisticsFeatures.map(f=>'<tr><td>'+escapeHTML(f.label)+'</td><td>'+(f.target_discrimination*100).toFixed(0)+'%</td><td>'+(f.target_validity*100).toFixed(0)+'%</td></tr>').join("")+'</tbody></table>';}
-function trialDvHtml(){return '<div class="gc-intro">'+cueTable()+'<p style="text-align:center">Press <b>Space</b> to continue.</p></div>';}
+// Neutral paired bars encode the exact same D/V percentages as the original table.
+function cueBar(probability,label){
+ const percent=Math.max(0,Math.min(100,Number(probability)*100));
+ const value=percent.toFixed(0);
+ return '<div class="gc-dv-measure" role="img" aria-label="'+label+': '+value+'%">'+
+   '<span class="gc-dv-track"><span class="gc-dv-fill" style="width:'+percent+'%"></span></span>'+
+   '<span class="gc-dv-percent" aria-hidden="true">'+value+'%</span></div>';
+}
+function cueTable(){
+ return '<table class="gc-dv-table" aria-label="Discrimination and validity of five city features">'+
+   '<thead><tr><th scope="col">Feature</th>'+
+   '<th scope="col">Discrimination (D)<span class="gc-dv-sub">How often cities differ</span></th>'+
+   '<th scope="col">Validity (V)<span class="gc-dv-sub">Accuracy when different</span></th></tr></thead>'+
+   '<tbody>'+statisticsFeatures.map(f=>
+     '<tr><td>'+escapeHTML(f.label)+'</td>'+
+     '<td>'+cueBar(f.target_discrimination,"Discrimination")+'</td>'+
+     '<td>'+cueBar(f.target_validity,"Validity")+'</td></tr>').join("")+
+   '</tbody></table><p class="gc-dv-scale">All bars use the same scale: 0% (empty) to 100% (full). Longer bars mean higher values.</p>';
+}
+function trialDvHtml(){return '<div class="gc-intro"><h2>Feature statistics</h2>'+cueTable()+'<p style="text-align:center">Press <b>Space</b> to continue.</p></div>';}
 function keyCity(key){const k=String(key ?? "").toLowerCase();return k==="a"||k==="arrowleft"?"A":k==="b"||k==="d"||k==="arrowright"?"B":null;}
 let metadata;
 function intro(stimulus){return {type:jsPsychHtmlKeyboardResponse,stimulus:'<div class="gc-intro">'+stimulus+'<p style="text-align:center">Press <b>Space</b> to continue.</p></div>',choices:[" "]};}
