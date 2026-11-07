@@ -44,18 +44,17 @@ html:fullscreen,body:fullscreen,html:-webkit-full-screen,body:-webkit-full-scree
 .gc-intro .gc-dv-table tbody td{border-bottom:1px solid #e5e9ed}
 .gc-intro .gc-dv-table tbody tr:last-child td{border-bottom:0}
 .gc-intro .gc-dv-table tbody td:first-child{text-align:center;font-weight:600;white-space:nowrap}
-.gc-dv-measure{display:flex;align-items:center;gap:10px;min-width:0}
-.gc-dv-track{height:12px;min-width:0;flex:1;overflow:hidden;background:#ecf0f3;border-radius:3px}
+.gc-dv-measure{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0}
+.gc-dv-percent{display:block;text-align:center;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.2}
+.gc-dv-track{display:block;width:100%;height:10px;overflow:hidden;background:#ecf0f3;border-radius:3px}
 .gc-dv-fill{display:block;height:100%;background:#566573;border-radius:3px 0 0 3px}
-.gc-dv-percent{min-width:38px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(max-width:620px){
   .gc-intro .gc-dv-table{font-size:12px}
   .gc-intro .gc-dv-table th,.gc-intro .gc-dv-table td{padding:9px 4px}
   .gc-intro .gc-dv-table th:first-child{width:25%}
   .gc-intro .gc-dv-table th:nth-child(2),.gc-intro .gc-dv-table th:nth-child(3){width:37.5%}
   .gc-dv-measure{gap:4px}
-  .gc-dv-track{height:11px}
-  .gc-dv-percent{min-width:28px}
+  .gc-dv-track{height:9px}
 }
 </style>
 </head>
@@ -142,8 +141,8 @@ function cueBar(probability,label){
  const percent=Math.max(0,Math.min(100,Number(probability)*100));
  const value=percent.toFixed(0);
  return '<div class="gc-dv-measure" role="img" aria-label="'+label+': '+value+'%">'+
-   '<span class="gc-dv-track"><span class="gc-dv-fill" style="width:'+percent+'%"></span></span>'+
-   '<span class="gc-dv-percent" aria-hidden="true">'+value+'%</span></div>';
+   '<span class="gc-dv-percent" aria-hidden="true">'+value+'%</span>'+
+   '<span class="gc-dv-track"><span class="gc-dv-fill" style="width:'+percent+'%"></span></span></div>';
 }
 function cueTable(){
  return '<table class="gc-dv-table" aria-label="Discrimination and validity of five city features">'+
