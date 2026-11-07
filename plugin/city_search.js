@@ -90,8 +90,8 @@ var citysearch = (function (jspsych) {
             const LABEL_W = layout.labelW;
             // Five ranks in perceptually balanced OKLCH blue/orange palettes (matching L and C at each rank).
             const shades={
-                blue:["#C0DAFC","#8DB7ED","#5D94DA","#3772BB","#23538E"],
-                orange:["#F6CEB7","#E3A47F","#CB7B48","#AB5819","#803D05"]
+                blue:["#EDF7FF","#8DB7ED","#5D94DA","#3772BB","#23538E"],
+                orange:["#FFF2EB","#E3A47F","#CB7B48","#AB5819","#803D05"]
             };
             if(trial.show_dv_dots){
                 const validLevels=x=>Array.isArray(x)&&x.length===N&&
