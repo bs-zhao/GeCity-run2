@@ -4,14 +4,14 @@ Independent experiment implementation based on bs-zhao/GeCity-run, now running *
 
 ## Trialset9 data
 
-The website loads [`data/experiment_data.js`](data/experiment_data.js), copied verbatim from [GeCity-exp trialset9](https://github.com/Cognition-Decision-Modeling-Lab/GeCity-exp/tree/main/s1_make_trials/trialsets/trialset9). It contains 120 main city-pair trials with target D percentages 5, 29, 41, 52, 62 and target V percentages 100, 88, 77, 66, 55. Achieved D: **5.00%, 30.00%, 41.67%, 52.50%, 62.50%**; achieved V: **100.00%, 88.89%, 76.00%, 66.67%, 54.67%**. The click-to-reveal, scoring, feedback, and full trial-level logging are unchanged. Break positions are calculated dynamically from the main trial count.
+The website loads [`data/experiment_data.js`](data/experiment_data.js), copied verbatim from [GeCity-exp trialset9](https://github.com/Cognition-Decision-Modeling-Lab/GeCity-exp/tree/main/s1_make_trials/trialsets/trialset9). It contains 120 main city-pair trials with target D percentages 5, 29, 41, 52, 62 and target V percentages 100, 88, 77, 66, 55. Achieved D: **5.00%, 30.00%, 41.67%, 52.50%, 62.50%**; achieved V: **100.00%, 88.89%, 76.00%, 66.67%, 54.67%**. The click-to-reveal, feedback, and full trial-level logging remain unchanged. **Scoring now deducts information cost only when the choice is correct.** Break positions are calculated dynamically from the main trial count.
 
 ## Changes
 
 - Left-click a concealed cell to reveal its Yes/No value permanently until the decision. Hovering is ignored.
-- Reward N (default 10) for correct choice, zero for incorrect. First Z (default 1) new reveals per trial are free; each new reveal thereafter costs M (default 1). Repeat clicks on revealed cells are logged but incur no extra charge.
-- Net trial points = correctness * N - max(0, new reveals - Z) * M. Negative net points are possible. Practice and main totals are computed separately.
-- The decision display continuously shows the cost, starting at -0 points. Correctness/earned points are not displayed to Table/no-feedback participants.
+- First Z (default 1) new reveals per trial are free; each additional new reveal incurs a recorded information cost M (default 1). Repeated clicks on an already revealed cell are logged but do not incur extra cost. The correct-choice reward is N (default 10).
+- **Net trial points = correct ? (N - information cost) : 0.** If wrong, the trial earns **zero points regardless of reveals/cost**. The revealed information and information cost are still recorded for analysis. With non-default settings, a correct choice can have negative net points when information cost exceeds N. Practice and main point totals are computed separately.
+- The decision display continuously shows information cost, starting at -0 points. This is a cost tracker, **not the trial's final net score**. Correctness/earned points are not displayed to Table/no-feedback participants. The objective is to maximize total net points.
 
 ## Qualtrics iframe
 
