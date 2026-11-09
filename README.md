@@ -1,6 +1,10 @@
 # GeCity Experiment 2: persistent click reveals with configurable information cost
 
-Independent experiment implementation based on bs-zhao/GeCity-run, using exactly the same trialset8: 150 German city pairs, 5 cues, 3 practice trials, two conditions and breaks after main trial 50 and 100.
+Independent experiment implementation based on bs-zhao/GeCity-run, now running **trialset9: 120 unique German city pairs**, 5 cues, 3 practice trials, two conditions and breaks after main trials **40 and 80**. The 150-trial trialset8 remains in the original GeCity-run repository.
+
+## Trialset9 data
+
+The website loads [`data/experiment_data.js`](data/experiment_data.js), copied verbatim from [GeCity-exp trialset9](https://github.com/Cognition-Decision-Modeling-Lab/GeCity-exp/tree/main/s1_make_trials/trialsets/trialset9). It contains 120 main city-pair trials with target D percentages 5, 29, 41, 52, 62 and target V percentages 100, 88, 77, 66, 55. Achieved D: **5.00%, 30.00%, 41.67%, 52.50%, 62.50%**; achieved V: **100.00%, 88.89%, 76.00%, 66.67%, 54.67%**. The click-to-reveal, scoring, feedback, and full trial-level logging are unchanged. Break positions are calculated dynamically from the main trial count.
 
 ## Changes
 
@@ -34,7 +38,7 @@ IMPORTANT: GitHub Pages and iframe alone do not save data in Qualtrics. Confirm 
 
 Add `dots=1` (also `color_dots=1`) to any iframe URL to display the same stacked D/V dot layout as the earlier `GeCity-run/pilot/dv-color-dots` under each central feature label. Default `dots=0` displays no dots. This switch is independent of `table` and `feedback`.
 
-Each of the two colors (blue and green) corresponds to either Discrimination (D) or Validity (V). The blue/green meaning is randomized by a 50/50 draw **once per participant/session before the experiment begins**, held fixed across practice and all 150 main trials, and stated in the Welcome screen and the decision-screen legend. D is shown before V in each label, but the D and V **colors** swap between participants. Each attribute's 1..5 dot intensity is a **relative rank among the five attributes**, with darker shades denoting higher D or V, exactly as in the original pilot. Ranks follow stable feature identity and not randomized screen position.
+Each of the two colors (blue and green) corresponds to either Discrimination (D) or Validity (V). The blue/green meaning is randomized by a 50/50 draw **once per participant/session before the experiment begins**, held fixed across practice and all 120 main trials, and stated in the Welcome screen and the decision-screen legend. D is shown before V in each label, but the D and V **colors** swap between participants. Each attribute's 1..5 dot intensity is a **relative rank among the five attributes**, with darker shades denoting higher D or V, exactly as in the original pilot. Ranks follow stable feature identity and not randomized screen position.
 
 The JSON metadata and each choice record contain `show_dv_dots`, `dv_color_mapping` (e.g. `{"discrimination":"green","validity":"blue"}`), `dv_discrimination_levels` and `dv_validity_levels` in the participant's top-to-bottom display order. `dv_dot_style` is `five-level-relative-rank` when enabled. The random color assignment happens after the full trial-order and position randomizations; `dots=1` and `dots=0` with the same seed therefore have identical trial and position order.
 
