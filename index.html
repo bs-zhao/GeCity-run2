@@ -226,10 +226,11 @@ const taskInstructions =
    : '<p>You will complete '+N_PRACTICE+' practice trials followed by '+N_TRIALS+' main trials.</p>')+
  '<p>Choose which city has the larger population.</p>'+
  '<p>Click a cell to reveal Yes or No. Its value remains visible until you choose.</p>'+
- '<p>A correct decision earns <b>'+pointText(REWARD_POINTS)+'</b> points; an incorrect decision earns zero reward points.</p>'+
+ '<p><b>Correct choice:</b> You earn <b>'+pointText(REWARD_POINTS)+'</b> points minus your information cost. <b>Incorrect choice:</b> You earn <b>0 points</b>, regardless of information cost.</p>'+
  '<p>The first <b>'+FREE_REVEALS+'</b> new cell reveals per trial are free. Each additional new reveal deducts <b>'+pointText(COST_POINTS)+'</b> points.</p>'+
  '<p>Clicking an already revealed cell again does not deduct points.</p>'+
- '<p>Your information-search cost is shown during each decision. Net trial points equal earned reward minus cost.</p>'+
+ '<p><b>Your goal is to maximize your total points across all trials.</b></p>'+
+ '<p>Your information-search cost is shown during each decision. Information cost is deducted from your points only when your answer is correct.</p>'+
  '<p>Place one hand on the mouse and the other on the <b>A</b> and <b>D</b> keys.</p>'+
  '<p>Press <b>A</b> for City A or <b>D</b> for City B.</p>'+
  dotInstruction()+
