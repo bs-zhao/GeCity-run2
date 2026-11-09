@@ -265,7 +265,7 @@ timeline.push(intro(SHORT_TEST
  ? '<h2>Short test</h2><p>This test contains just one decision trial, with no practice trials.</p>'
  : '<h2>Main experiment</h2><p>Practice complete. The main experiment contains '+N_TRIALS+' trials. Please respond as carefully as you can.</p>'));
 if (SHORT_TEST) timeline.push(intro(blackSquareReminder));
-// For the full experiment: breaks after trials 50 and 100 (not practice).
+// For the full experiment: breaks after approximately 1/3 and 2/3 of main trials (40 and 80 for trialset9; practice excluded).
 // Debug sessions of at least three trials use proportional break positions.
 const breakAfter=N_TRIALS>=3
  ? [Math.floor(N_TRIALS/3),Math.floor(2*N_TRIALS/3)]
