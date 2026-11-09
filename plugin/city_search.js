@@ -396,7 +396,9 @@ var citysearch = (function (jspsych) {
                     free_reveals_per_trial: trial.free_reveals,
                     earned_reward_points: roundPoints(correct ? trial.reward_points : 0),
                     information_cost_points: informationCostPoints,
-                    net_trial_points: roundPoints((correct ? trial.reward_points : 0) - informationCostPoints),
+                    // The cost is tracked on all trials but deducted only for correct choices.
+                    // Wrong answers always score zero, even if cells were revealed.
+                    net_trial_points: correct ? roundPoints(trial.reward_points - informationCostPoints) : 0,
                     first_cell: firstCell,
                     first_side: firstSide,
                     first_feature_idx: firstFeatureIdx,
